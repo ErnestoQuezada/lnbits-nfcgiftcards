@@ -53,5 +53,4 @@ nfcgiftcards/
 ## Dependencies
 
 - LNbits 1.5.6+
-- Withdraw extension (enabled)
 - Chrome on Android (for NFC writing via Web NFC API)
