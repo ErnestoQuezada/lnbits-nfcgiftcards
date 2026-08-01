@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% block page %}
+<div id="vue" v-cloak>
+  <q-card class="q-pa-md q-mb-md">
+    <q-card-section>
+      <div class="text-h6">NFC Gift Cards</div>
+      <div class="text-subtitle2">Create rechargeable Lightning gift cards on NFC tags</div>
+    </q-card-section>
+  </q-card>
+
+  <div v-if="!ready" class="text-center q-pa-xl">
+    <q-spinner color="primary" size="3em"></q-spinner>
+    <div class="text-grey q-mt-md">Loading wallet...</div>
+  </div>
+
+  <div class="row q-col-gutter-md" v-show="ready">
+    <!-- Create Form -->
+    <div class="col-12 col-md-4">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Create Gift Card</div>
+        </q-card-section>
+        <q-separator></q-separator>
+        <q-card-section>
+          <q-form @submit.prevent="createGiftCard" class="q-gutter-md">
+            <q-input
+              filled
+              v-model="form.amount"
+              type="text"
+              inputmode="numeric"
+              label="Initial Amount (sats)"
+            ></q-input>
+
+            <q-input
+              filled
+              v-model="form.note"
+              label="Note (optional)"
+              maxlength="255"
+            ></q-input>
+
+            <q-input
+              filled
+              v-model="form.expires_at"
+              type="datetime-local"
+              label="Expires at (optional)"
+            ></q-input>
+
+            <q-btn
+              unelevated
+              color="primary"
+              type="submit"
+              :loading="creating"
+              label="Create Gift Card"
+            ></q-btn>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </div>
+
+    <!-- Gift Card Detail -->
+    <div class="col-12 col-md-4" v-if="selectedCard">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Gift Card Details</div>
+        </q-card-section>
+        <q-separator></q-separator>
+        <q-card-section class="text-center">
+          <q-badge
+            :color="selectedCard.balance > 0 ? 'positive' : 'negative'"
+            class="q-mb-md"
+          >
+            <span v-text="'Balance: ' + selectedCard.balance + ' sats'"></span>
+          </q-badge>
+
+          <!-- Withdraw section -->
+          <template v-if="showWithdraw">
+            <div class="q-mb-md">
+              <div class="text-caption text-grey q-mb-xs">Scan to withdraw</div>
+              <div
+                v-if="selectedCard.qr_url"
+                style="background: white; padding: 12px; display: inline-block; border-radius: 8px;"
+              >
+                <q-img
+                  :src="selectedCard.qr_url"
+                  style="width: 200px; height: 200px;"
+                ></q-img>
+              </div>
+            </div>
+
+            <div class="q-mb-sm" v-if="selectedCard.lnurl">
+              <code class="text-caption" style="word-break: break-all;" v-text="selectedCard.lnurl"></code>
+            </div>
+
+            <div class="row q-gutter-sm justify-center q-mb-md">
+              <q-btn
+                v-if="selectedCard.lnurl"
+                outline
+                color="primary"
+                icon="content_copy"
+                label="Copy LNURL"
+                @click="copyLnurl"
+              ></q-btn>
+              <q-btn
+                v-if="nfcSupported && selectedCard.lnurl"
+                outline
+                color="secondary"
+                icon="nfc"
+                label="Write to NFC"
+                @click="writeNfc"
+                :loading="writingNfc"
+              ></q-btn>
+            </div>
+          </template>
+
+          <q-banner v-if="written" class="bg-positive text-white q-mb-md">
+            <template v-slot:avatar>
+              <q-icon name="check_circle" color="white"></q-icon>
+            </template>
+            NFC tag written successfully.
+          </q-banner>
+
+          <q-separator class="q-my-md"></q-separator>
+
+          <!-- Recharge QR (for topping up) -->
+          <div class="q-mb-md">
+            <div class="text-caption text-grey q-mb-xs">Scan to recharge</div>
+            <div
+              v-if="selectedCard.lnurlp_qr_url"
+              style="background: white; padding: 12px; display: inline-block; border-radius: 8px;"
+            >
+              <q-img
+                :src="selectedCard.lnurlp_qr_url"
+                style="width: 200px; height: 200px;"
+              ></q-img>
+            </div>
+          </div>
+
+          <div class="q-mb-sm" v-if="selectedCard.lnurlp_bech32">
+            <code class="text-caption" style="word-break: break-all;" v-text="selectedCard.lnurlp_bech32"></code>
+          </div>
+
+          <div class="row q-gutter-sm justify-center q-mb-md">
+            <q-btn
+              v-if="selectedCard.lnurlp_bech32"
+              outline
+              color="positive"
+              icon="content_copy"
+              label="Copy Recharge LNURL"
+              @click="copyLnurlPay"
+            ></q-btn>
+          </div>
+
+          <q-separator class="q-my-md"></q-separator>
+
+          <!-- Manual Recharge -->
+          <div class="text-subtitle2 q-mb-sm">Manual Recharge</div>
+          <q-form @submit.prevent="rechargeCard" class="row q-gutter-sm justify-center">
+            <q-input
+              filled
+              v-model="rechargeAmount"
+              type="text"
+              inputmode="numeric"
+              label="Amount (sats)"
+              style="width: 150px;"
+            ></q-input>
+            <q-btn
+              color="positive"
+              type="submit"
+              :loading="recharging"
+              label="Recharge"
+            ></q-btn>
+          </q-form>
+
+          <q-banner v-if="!nfcSupported" class="bg-grey-3 q-mt-md text-dark">
+            <template v-slot:avatar>
+              <q-icon name="info" color="primary"></q-icon>
+            </template>
+            Web NFC is only available in Chrome on Android.
+          </q-banner>
+
+          <q-banner v-if="nfcMessage" :class="nfcBannerClass" class="q-mt-md">
+            <span v-text="nfcMessage"></span>
+          </q-banner>
+        </q-card-section>
+      </q-card>
+    </div>
+
+    <!-- List -->
+    <div :class="listColumnClass">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Your Gift Cards</div>
+        </q-card-section>
+        <q-separator></q-separator>
+        <q-card-section>
+          <div v-if="listLoading" class="text-center q-pa-md">
+            <q-spinner color="primary" size="2em"></q-spinner>
+            <div class="text-grey q-mt-sm">Loading gift cards...</div>
+          </div>
+          <q-list separator v-else-if="giftCards.length > 0">
+            <q-item
+              v-for="card in giftCards"
+              :key="card.id"
+              clickable
+              @click="selectCard(card)"
+              :active="isCardActive(card)"
+              active-class="bg-primary text-white"
+            >
+              <q-item-section>
+                <q-item-label v-text="card.note || 'NFC Gift Card'"></q-item-label>
+                <q-item-label caption :class="cardCaptionClass(card)">
+                  <span v-text="'Balance: ' + card.balance + ' sats'"></span>
+                  <span v-if="card.is_expired"> &bull; Expired</span>
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  flat
+                  round
+                  icon="delete"
+                  color="negative"
+                  size="sm"
+                  @click.stop="deleteCard(card.id)"
+                ></q-btn>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <div v-else class="text-grey text-center q-pa-md">
+            No gift cards yet. Create one on the left.
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/nfcgiftcards/static/js/index.js"></script>
+{% endblock %}

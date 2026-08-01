@@ -1,0 +1,32 @@
+{
+  "id": "nfcgiftcards",
+  "name": "NFC Gift Cards",
+  "stub_version": "v0.2.0",
+  "short_description": "Create Lightning gift cards on NFC tags",
+  "description": "Create rechargeable Lightning gift cards on NFC tags (NTAG215 and similar)",
+  "public_page": {
+    "has_public_page": true,
+    "owner_data_fields": {
+      "name": "cards",
+      "description": "cards"
+    },
+    "client_data_fields": {
+      "public_inputs": [
+        "name"
+      ]
+    },
+  "tile": "/nfcgiftcards/static/nfc-gift-card.png",
+  "min_lnbits_version": "1.5.0",
+  "donate": "acreonte@blink.sv",
+  "contributors": [
+    {
+      "name": "Acreonte",
+      "uri": "mailto:acreonte@protonmail.com",
+      "role": "Developer"
+    }
+  ],
+  "images": [],
+  "description_md": "https://raw.githubusercontent.com/lnbits/nfcgiftcards/main/description.md",
+  "terms_and_conditions_md": "https://raw.githubusercontent.com/lnbits/nfcgiftcards/main/toc.md",
+  "license": "MIT"
+}
