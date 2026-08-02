@@ -1,14 +1,16 @@
-[
-  {
-    "id": "nfcgiftcards",
-    "repo": "https://github.com/ErnestoQuezada/lnbits-nfcgiftcards",
-    "version": "0.2.0",
-    "archive": "https://github.com/ErnestoQuezada/lnbits-nfcgiftcards/archive/refs/tags/v0.2.0-alpha.zip",
-    "hash": "875B3601127FC82676C5C4A4399C5F93BC837AF18017FACAE0CE4983A7EFDEAC",
-    "min_lnbits_version": "1.5.0",
-    "name": "NFC Gift Cards",
-    "short_description": "Create rechargeable Lightning gift cards on NFC tags",
-    "icon": "https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/nfc-gift-card.png",
-    "details_link": "https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/config.json"
-  }
-]
+{
+  "extensions": [
+    {
+      "id": "nfcgiftcards",
+      "repo": "https://github.com/ErnestoQuezada/lnbits-nfcgiftcards",
+      "version": "0.2.0",
+      "archive": "https://github.com/ErnestoQuezada/lnbits-nfcgiftcards/archive/refs/tags/v0.2.0.zip",
+      "hash": "875B3601127FC82676C5C4A4399C5F93BC837AF18017FACAE0CE4983A7EFDEAC",
+      "min_lnbits_version": "1.5.0",
+      "name": "NFC Gift Cards",
+      "short_description": "Create rechargeable Lightning gift cards on NFC tags",
+      "icon": "https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/nfc-gift-card.png",
+      "details_link": "https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/config.json"
+    }
+  ]
+}
