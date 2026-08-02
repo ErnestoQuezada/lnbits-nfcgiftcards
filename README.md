@@ -1,56 +1,54 @@
-# NFC Gift Cards Extension
+# NFC Gift Cards for LNbits
 
-## Installation
+NFC Gift Cards brings physical Lightning payments into the real world by allowing LNbits users to create rechargeable gift cards stored on NFC tags.
 
-1. Copy the entire `nfcgiftcards` folder into your LNbits extensions directory:
-   ```bash
-   cp -r nfcgiftcards /path/to/lnbits/lnbits/extensions/
-   ```
+The extension allows you to write Lightning-powered gift cards onto compatible NFC tags such as NTAG215 and similar NFC devices. Each card can hold a balance that can be redeemed by scanning the NFC tag with a compatible device.
 
-2. Ensure the **Withdraw** extension is enabled in LNbits.
+## Features
 
-3. Restart LNbits to register the extension and run migrations.
+* Create Lightning gift cards using LNbits
+* Store gift card information on NFC tags
+* Recharge existing gift cards
+* Redeem gift card balances through a simple NFC interaction
+* Support for affordable, reusable NFC hardware
+* Integrates directly with your LNbits wallet infrastructure
 
-4. Enable "NFC Gift Cards" from the Extensions UI.
+## How it works
 
-## Thumbnail
+1. Create a gift card from your LNbits wallet.
+2. Write the gift card information to an NFC tag.
+3. Give the physical NFC card to another person.
+4. The recipient can scan the tag and redeem the available Lightning balance.
 
-The extension tile image is referenced in `config.json` as:
-```json
-"tile": "/nfcgiftcards/static/nfc-gift-card.png"
-```
+## Use cases
 
-Place any PNG image at:
-```
-nfcgiftcards/static/nfc-gift-card.png
-```
+NFC Gift Cards can be used for:
 
-A placeholder is included. Replace it with your own 512x512 PNG for production.
+* Physical Lightning gifts
+* Bitcoin onboarding experiences
+* Store credit systems
+* Event vouchers
+* Community rewards
+* Point-of-sale experiments
+* Educational Bitcoin demonstrations
 
-## File Structure
+## NFC Hardware
 
-```
-nfcgiftcards/
-├── __init__.py
-├── config.json
-├── manifest.json
-├── models.py
-├── crud.py
-├── migrations.py
-├── views.py
-├── views_api.py
-├── description.md
-├── toc.md
-├── static/
-│   ├── nfc-gift-card.png
-│   └── js/
-│       └── index.js
-└── templates/
-    └── nfcgiftcards/
-        └── index.html
-```
+The extension is designed to work with common NFC tags, including NTAG215 and compatible devices. Different NFC hardware may have different storage capacities and capabilities.
 
-## Dependencies
+## Security considerations
 
-- LNbits 1.5.6+
-- Chrome on Android (for NFC writing via Web NFC API)
+NFC tags are physical objects and should be treated accordingly. Users should consider their threat model when deploying gift cards, especially for high-value balances.
+
+For larger amounts, additional safeguards such as redemption limits, verification steps, or secure distribution methods may be appropriate.
+
+## Requirements
+
+* LNbits 1.5.0 or later
+* A Lightning wallet configured with LNbits
+* Compatible NFC tags
+* An NFC-capable phone or reader
+
+## License
+
+This project is released under the MIT License.
