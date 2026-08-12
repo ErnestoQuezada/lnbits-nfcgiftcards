@@ -34,6 +34,24 @@ try {
       },
       showWithdraw() {
         return !this.written
+      },
+      rechargeQrUrl() {
+        if (!this.selectedCard) return ''
+        // Prefer backend-provided QR URL
+        if (this.selectedCard.lnurlp_qr_url) {
+          return this.selectedCard.lnurlp_qr_url
+        }
+        // Fallback: construct from bech32
+        if (this.selectedCard.lnurlp_bech32) {
+          var base = window.location.protocol + '//' + window.location.host + '/'
+          return base + 'api/v1/qrcode/' + encodeURIComponent(this.selectedCard.lnurlp_bech32)
+        }
+        // Last resort: construct from raw URL
+        if (this.selectedCard.lnurlp_url) {
+          var base2 = window.location.protocol + '//' + window.location.host + '/'
+          return base2 + 'api/v1/qrcode/' + encodeURIComponent(this.selectedCard.lnurlp_url)
+        }
+        return ''
       }
     },
     methods: {
@@ -47,9 +65,10 @@ try {
             wallet.inkey
           )
           var raw = response && response.data
+          console.log('[NFC Gift Cards] fetch raw:', raw)
           if (Array.isArray(raw)) {
             this.giftCards = raw.map(function(c) {
-              return {
+              var card = {
                 id: c.id || '',
                 note: c.note || '',
                 amount: c.amount || 0,
@@ -62,6 +81,8 @@ try {
                 expires_at: c.expires_at || null,
                 is_expired: false
               }
+              console.log('[NFC Gift Cards] mapped card:', card.id, 'lnurlp_qr_url:', card.lnurlp_qr_url)
+              return card
             })
             var now = new Date()
             this.giftCards.forEach(function(card) {
@@ -162,6 +183,7 @@ try {
         this.nfcMessage = ''
         this.nfcError = false
         this.rechargeAmount = ''
+        console.log('[NFC Gift Cards] selected card:', card.id, 'lnurlp_qr_url:', card.lnurlp_qr_url, 'rechargeQrUrl:', this.rechargeQrUrl)
       },
       isCardActive(card) {
         return this.selectedCard && this.selectedCard.id === card.id

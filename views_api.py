@@ -45,21 +45,43 @@ def _create_lnurl_pay(card_id: str, request: Request) -> str:
 
 
 def _build_card_response(card, request: Request) -> GiftCardResponse:
-    resp = GiftCardResponse(**card.dict())
-    base = str(request.base_url)
+    logger.debug(f"_build_card_response called for card {card.id}, type={type(card)}")
+    try:
+        resp = GiftCardResponse(**card.dict())
+    except Exception as exc:
+        logger.error(f"Failed to create GiftCardResponse from card {card.id}: {exc}")
+        raise
 
+    base = str(request.base_url)
+    logger.debug(f"Building response for {card.id} with base_url={base}")
+
+    # Withdraw QR
     if card.lnurl:
         resp.qr_url = base + f"api/v1/qrcode/{card.lnurl}"
+        logger.debug(f"Withdraw QR: {resp.qr_url}")
 
-    lnurlp_url = str(request.url_for("nfcgiftcards.api_lnurlp_response", gift_card_id=card.id))
-    resp.lnurlp_url = lnurlp_url
-
+    # LNURL-pay (recharge)
     try:
-        lnurlp_bech32 = str(lnurl_encode(lnurlp_url).bech32)
+        lnurlp_url = str(request.url_for(
+            "nfcgiftcards.api_lnurlp_response", gift_card_id=card.id
+        ))
+        resp.lnurlp_url = lnurlp_url
+        logger.debug(f"LNURL-pay URL: {lnurlp_url}")
+
+        lnurlp_bech32 = _create_lnurl_pay(card.id, request)
         resp.lnurlp_bech32 = lnurlp_bech32
         resp.lnurlp_qr_url = base + f"api/v1/qrcode/{lnurlp_bech32}"
+        logger.debug(f"LNURL-pay QR: {resp.lnurlp_qr_url}")
+
     except Exception as exc:
-        logger.warning(f"Failed to encode LNURL-pay for {card.id}: {exc}")
+        logger.error(f"Failed to build LNURL-pay for {card.id}: {exc}")
+        # Still set the raw URL so frontend can work with it
+        try:
+            resp.lnurlp_url = str(request.url_for(
+                "nfcgiftcards.api_lnurlp_response", gift_card_id=card.id
+            ))
+        except Exception:
+            pass
 
     return resp
 
@@ -71,8 +93,18 @@ async def api_list_gift_cards(
     limit: int = Query(0, ge=0),
     offset: int = Query(0, ge=0),
 ):
+    logger.info(f"Listing gift cards for wallet {key_info.wallet.id}")
     cards = await get_gift_cards([key_info.wallet.id], limit=limit, offset=offset)
-    return [_build_card_response(card, request) for card in cards]
+    logger.info(f"Found {len(cards)} gift cards")
+    result = []
+    for card in cards:
+        try:
+            resp = _build_card_response(card, request)
+            result.append(resp)
+        except Exception as exc:
+            logger.error(f"Error building response for card {card.id}: {exc}")
+            # Skip cards that fail to build
+    return result
 
 
 @nfcgiftcards_ext_api.post("/nfcgiftcards", status_code=HTTPStatus.CREATED)

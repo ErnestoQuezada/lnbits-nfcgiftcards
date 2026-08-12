@@ -125,14 +125,15 @@
           <div class="q-mb-md">
             <div class="text-caption text-grey q-mb-xs">Scan to recharge</div>
             <div
-              v-if="selectedCard.lnurlp_qr_url"
+              v-if="rechargeQrUrl"
               style="background: white; padding: 12px; display: inline-block; border-radius: 8px;"
             >
               <q-img
-                :src="selectedCard.lnurlp_qr_url"
+                :src="rechargeQrUrl"
                 style="width: 200px; height: 200px;"
               ></q-img>
             </div>
+            <div v-else class="text-grey text-caption">Recharge QR unavailable</div>
           </div>
 
           <div class="q-mb-sm" v-if="selectedCard.lnurlp_bech32">
