@@ -14,7 +14,7 @@
   </div>
 
   <div class="row q-col-gutter-md" v-show="ready">
-    <!-- Create Form -->
+    <!-- Create Form (left) -->
     <div class="col-12 col-md-4">
       <q-card>
         <q-card-section>
@@ -57,7 +57,54 @@
       </q-card>
     </div>
 
-    <!-- Gift Card Detail -->
+    <!-- List (middle, always) -->
+    <div class="col-12 col-md-4">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Your Gift Cards</div>
+        </q-card-section>
+        <q-separator></q-separator>
+        <q-card-section>
+          <div v-if="listLoading" class="text-center q-pa-md">
+            <q-spinner color="primary" size="2em"></q-spinner>
+            <div class="text-grey q-mt-sm">Loading gift cards...</div>
+          </div>
+          <q-list separator v-else-if="giftCards.length > 0">
+            <q-item
+              v-for="card in giftCards"
+              :key="card.id"
+              clickable
+              @click="selectCard(card)"
+              :active="isCardActive(card)"
+              active-class="bg-primary text-white"
+            >
+              <q-item-section>
+                <q-item-label v-text="card.note || 'NFC Gift Card'"></q-item-label>
+                <q-item-label caption :class="cardCaptionClass(card)">
+                  <span v-text="'Balance: ' + card.balance + ' sats'"></span>
+                  <span v-if="card.is_expired"> &bull; Expired</span>
+                </q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn
+                  flat
+                  round
+                  icon="delete"
+                  color="negative"
+                  size="sm"
+                  @click.stop="deleteCard(card.id)"
+                ></q-btn>
+              </q-item-section>
+            </q-item>
+          </q-list>
+          <div v-else class="text-grey text-center q-pa-md">
+            No gift cards yet. Create one on the left.
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
+
+    <!-- Gift Card Detail (right, when selected) -->
     <div class="col-12 col-md-4" v-if="selectedCard">
       <q-card>
         <q-card-section>
@@ -182,53 +229,6 @@
           <q-banner v-if="nfcMessage" :class="nfcBannerClass" class="q-mt-md">
             <span v-text="nfcMessage"></span>
           </q-banner>
-        </q-card-section>
-      </q-card>
-    </div>
-
-    <!-- List -->
-    <div :class="listColumnClass">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Your Gift Cards</div>
-        </q-card-section>
-        <q-separator></q-separator>
-        <q-card-section>
-          <div v-if="listLoading" class="text-center q-pa-md">
-            <q-spinner color="primary" size="2em"></q-spinner>
-            <div class="text-grey q-mt-sm">Loading gift cards...</div>
-          </div>
-          <q-list separator v-else-if="giftCards.length > 0">
-            <q-item
-              v-for="card in giftCards"
-              :key="card.id"
-              clickable
-              @click="selectCard(card)"
-              :active="isCardActive(card)"
-              active-class="bg-primary text-white"
-            >
-              <q-item-section>
-                <q-item-label v-text="card.note || 'NFC Gift Card'"></q-item-label>
-                <q-item-label caption :class="cardCaptionClass(card)">
-                  <span v-text="'Balance: ' + card.balance + ' sats'"></span>
-                  <span v-if="card.is_expired"> &bull; Expired</span>
-                </q-item-label>
-              </q-item-section>
-              <q-item-section side>
-                <q-btn
-                  flat
-                  round
-                  icon="delete"
-                  color="negative"
-                  size="sm"
-                  @click.stop="deleteCard(card.id)"
-                ></q-btn>
-              </q-item-section>
-            </q-item>
-          </q-list>
-          <div v-else class="text-grey text-center q-pa-md">
-            No gift cards yet. Create one on the left.
-          </div>
         </q-card-section>
       </q-card>
     </div>

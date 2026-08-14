@@ -26,9 +26,6 @@ try {
       }
     },
     computed: {
-      listColumnClass() {
-        return this.selectedCard ? 'col-12 col-md-4' : 'col-12 col-md-8'
-      },
       nfcBannerClass() {
         return this.nfcError ? 'bg-negative text-white' : 'bg-positive text-white'
       },

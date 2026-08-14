@@ -1,3 +1,5 @@
+![Screenshot](https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/paid.png)
+
 # NFC Gift Cards for LNbits
 
 NFC Gift Cards brings physical Lightning payments into the real world by allowing LNbits users to create rechargeable gift cards stored on NFC tags.
