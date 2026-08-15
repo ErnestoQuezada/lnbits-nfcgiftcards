@@ -1,10 +1,10 @@
-![Screenshot](https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/paid.png)
+<img src="https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/paid.png" alt="Invoice paid" width="400" height="267">
 
-# NFC Gift Cards
+## NFC Gift Cards
 
 Create Lightning Network gift cards backed by LNURL-withdraw links and write them directly to inexpensive NFC tags (NTAG213/215/216) using the browser's Web NFC API.
 
-# Features
+### Features
 
 - Create fixed-amount Lightning gift cards
 - Generate LNURL-withdraw links automatically
@@ -14,18 +14,18 @@ Create Lightning Network gift cards backed by LNURL-withdraw links and write the
 - Track redemption status
 - Manage expiry dates
 
-# Supported NFC Tags
+### Supported NFC Tags
 
 - NTAG213
 - NTAG215
 - NTAG216
 
-# Requirements
+### Requirements
 
 - Chrome on Android (for NFC writing)
 - Withdraw extension enabled
 
-# Usage
+### Usage
 
 1. Enable the extension
 2. Select a wallet

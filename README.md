@@ -1,4 +1,4 @@
-![Screenshot](https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/paid.png)
+<img src="https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/paid.png" alt="Invoice paid" width="400" height="267">
 
 # NFC Gift Cards for LNbits
 
@@ -15,6 +15,7 @@ The extension allows you to write Lightning-powered gift cards onto compatible N
 * Support for affordable, reusable NFC hardware
 * Integrates directly with your LNbits wallet infrastructure
 
+
 ## How it works
 
 1. Create a gift card from your LNbits wallet.
@@ -22,6 +23,7 @@ The extension allows you to write Lightning-powered gift cards onto compatible N
 3. Give the physical NFC card to another person.
 4. The recipient can scan the tag and redeem the available Lightning balance.
 
+<img src="https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/nfc-gift-cards.png" alt="Invoice paid" width="400" height="267">
 ## Use cases
 
 NFC Gift Cards can be used for:
