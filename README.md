@@ -24,6 +24,7 @@ The extension allows you to write Lightning-powered gift cards onto compatible N
 4. The recipient can scan the tag and redeem the available Lightning balance.
 
 <img src="https://raw.githubusercontent.com/ErnestoQuezada/lnbits-nfcgiftcards/main/static/image/nfc-gift-cards.png" alt="Invoice paid" width="400" height="267">
+
 ## Use cases
 
 NFC Gift Cards can be used for:
