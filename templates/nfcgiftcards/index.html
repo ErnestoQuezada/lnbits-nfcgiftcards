@@ -121,27 +121,20 @@
         </q-card-section>
         <q-separator></q-separator>
         <q-card-section class="text-center">
-          <q-badge
-            :color="selectedCard.enabled && selectedCard.balance > 0 ? 'positive' : 'negative'"
-            class="q-mb-md"
-          >
-            <span v-text="selectedCard.enabled ? 'Balance: ' + selectedCard.balance + ' sats' : 'Disabled'"></span>
-          </q-badge>
 
-          <q-btn
-            outline
-            dense
-            size="sm"
-            :color="selectedCard.enabled ? 'positive' : 'grey'"
-            :icon="selectedCard.enabled ? 'toggle_on' : 'toggle_off'"
-            :label="selectedCard.enabled ? 'Enabled' : 'Disabled'"
-            @click="toggleEnabled(selectedCard)"
-            class="q-mb-md"
-          ></q-btn>
-
-          <!-- Withdraw section (hidden by default) -->
-          <template v-if="showWithdraw">
+          <!-- Action buttons row -->
+          <div class="row q-gutter-sm justify-center q-mb-md">
             <q-btn
+              outline
+              dense
+              size="sm"
+              :color="selectedCard.enabled ? 'positive' : 'grey'"
+              :icon="selectedCard.enabled ? 'toggle_on' : 'toggle_off'"
+              :label="selectedCard.enabled ? 'Enabled' : 'Disabled'"
+              @click="toggleEnabled(selectedCard)"
+            ></q-btn>
+            <q-btn
+              v-if="showWithdraw && !showWithdrawQr"
               outline
               dense
               size="sm"
@@ -149,10 +142,19 @@
               icon="qr_code"
               label="Show Withdraw QR"
               @click="showWithdrawQr = true"
-              class="q-mb-md"
-              v-if="!showWithdrawQr"
             ></q-btn>
+          </div>
 
+          <!-- Balance badge -->
+          <q-badge
+            :color="selectedCard.enabled && selectedCard.balance > 0 ? 'positive' : 'negative'"
+            class="q-mb-md"
+          >
+            <span v-text="selectedCard.enabled ? 'Balance: ' + selectedCard.balance + ' sats' : 'Disabled'"></span>
+          </q-badge>
+
+          <!-- Withdraw section (hidden by default) -->
+          <template v-if="showWithdraw">
             <template v-if="showWithdrawQr">
               <div class="q-mb-md">
                 <div class="text-caption text-grey q-mb-xs">Scan to withdraw</div>
