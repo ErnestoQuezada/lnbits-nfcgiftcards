@@ -31,16 +31,16 @@ async def m002_balance_and_k1(db):
             amount INTEGER NOT NULL,
             balance INTEGER NOT NULL DEFAULT 0,
             k1 TEXT,
+            enabled INTEGER NOT NULL DEFAULT 1,
             created_at TIMESTAMP DEFAULT {db.timestamp_column_default},
             expires_at TIMESTAMP,
             note TEXT
         );
     """)
 
-    # Migrate existing data: use id as k1 (already unique and random)
     await db.execute("""
         INSERT INTO nfcgiftcards.giftcards_new
-            (id, wallet_id, lnurl, amount, balance, k1, created_at, expires_at, note)
+            (id, wallet_id, lnurl, amount, balance, k1, enabled, created_at, expires_at, note)
         SELECT
             id,
             wallet_id,
@@ -48,6 +48,7 @@ async def m002_balance_and_k1(db):
             amount,
             amount,
             id,
+            1,
             created_at,
             expires_at,
             note

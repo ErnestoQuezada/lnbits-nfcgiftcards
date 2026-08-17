@@ -37,6 +37,10 @@ async def api_lnurl_response(
         logger.warning(f"LNURL scan: card not found: {gift_card_id}")
         return LnurlErrorResponse(reason="Gift card does not exist.")
 
+    if not card.enabled:
+        logger.warning(f"LNURL scan: card disabled: {gift_card_id}")
+        return LnurlErrorResponse(reason="Gift card is disabled.")
+
     if card.is_expired:
         logger.warning(f"LNURL scan: card expired: {gift_card_id}")
         return LnurlErrorResponse(reason="Gift card has expired.")
@@ -81,6 +85,10 @@ async def api_lnurl_callback(
     if not card:
         logger.warning(f"LNURL callback: card not found: {gift_card_id}")
         return LnurlErrorResponse(reason="Gift card not found.")
+
+    if not card.enabled:
+        logger.warning(f"LNURL callback: card disabled: {gift_card_id}")
+        return LnurlErrorResponse(reason="Gift card is disabled.")
 
     if card.is_expired:
         logger.warning(f"LNURL callback: card expired: {gift_card_id}")
@@ -143,9 +151,6 @@ async def api_lnurl_callback(
 async def api_lnurlp_response(
     request: Request, gift_card_id: str
 ):
-    """
-    LNURL-pay endpoint. Anyone can scan this to send sats to the card.
-    """
     card = await get_gift_card(gift_card_id)
     if not card:
         return LnurlErrorResponse(reason="Gift card not found.")
@@ -179,10 +184,6 @@ async def api_lnurlp_callback(
     gift_card_id: str,
     amount: int,
 ):
-    """
-    LNURL-pay callback. Creates an invoice that, when paid, triggers
-    the background task to recharge the card.
-    """
     card = await get_gift_card(gift_card_id)
     if not card:
         return LnurlErrorResponse(reason="Gift card not found.")
@@ -195,7 +196,6 @@ async def api_lnurlp_callback(
         return LnurlErrorResponse(reason="Amount too small.")
 
     try:
-        # create_invoice returns a Payment object in LNbits 1.5.6
         payment = await create_invoice(
             wallet_id=card.wallet_id,
             amount=amount_sat,
@@ -207,9 +207,7 @@ async def api_lnurlp_callback(
             },
         )
 
-        # Extract payment_hash from the Payment object
         payment_hash = payment.payment_hash if hasattr(payment, 'payment_hash') else str(payment)
-
         logger.info(f"LNURL-pay: created invoice hash={payment_hash}, amount={amount_sat}")
 
         return JSONResponse({

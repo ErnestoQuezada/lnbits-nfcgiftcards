@@ -25,6 +25,7 @@ async def create_gift_card(
         amount=amount,
         balance=amount,
         k1=k1,
+        enabled=True,
         created_at=datetime.now(),
         expires_at=expires_at,
         note=note,
@@ -78,6 +79,13 @@ async def recharge_gift_card(gift_card_id: str, amount: int) -> None:
     await db.execute(
         "UPDATE nfcgiftcards.giftcards SET balance = balance + :amount WHERE id = :id",
         {"id": gift_card_id, "amount": amount},
+    )
+
+
+async def toggle_gift_card_enabled(gift_card_id: str, enabled: bool) -> None:
+    await db.execute(
+        "UPDATE nfcgiftcards.giftcards SET enabled = :enabled WHERE id = :id",
+        {"id": gift_card_id, "enabled": 1 if enabled else 0},
     )
 
 

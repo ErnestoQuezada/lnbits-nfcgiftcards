@@ -57,7 +57,7 @@
       </q-card>
     </div>
 
-    <!-- List (middle, always) -->
+    <!-- List (middle) -->
     <div class="col-12 col-md-4">
       <q-card>
         <q-card-section>
@@ -82,10 +82,19 @@
                 <q-item-label v-text="card.note || 'NFC Gift Card'"></q-item-label>
                 <q-item-label caption :class="cardCaptionClass(card)">
                   <span v-text="'Balance: ' + card.balance + ' sats'"></span>
+                  <span v-if="!card.enabled"> &bull; Disabled</span>
                   <span v-if="card.is_expired"> &bull; Expired</span>
                 </q-item-label>
               </q-item-section>
               <q-item-section side>
+                <q-btn
+                  flat
+                  round
+                  :icon="card.enabled ? 'toggle_on' : 'toggle_off'"
+                  :color="card.enabled ? 'positive' : 'grey'"
+                  size="sm"
+                  @click.stop="toggleEnabled(card)"
+                ></q-btn>
                 <q-btn
                   flat
                   round
@@ -104,7 +113,7 @@
       </q-card>
     </div>
 
-    <!-- Gift Card Detail (right, when selected) -->
+    <!-- Gift Card Detail (right) -->
     <div class="col-12 col-md-4" v-if="selectedCard">
       <q-card>
         <q-card-section>
@@ -113,50 +122,75 @@
         <q-separator></q-separator>
         <q-card-section class="text-center">
           <q-badge
-            :color="selectedCard.balance > 0 ? 'positive' : 'negative'"
+            :color="selectedCard.enabled && selectedCard.balance > 0 ? 'positive' : 'negative'"
             class="q-mb-md"
           >
-            <span v-text="'Balance: ' + selectedCard.balance + ' sats'"></span>
+            <span v-text="selectedCard.enabled ? 'Balance: ' + selectedCard.balance + ' sats' : 'Disabled'"></span>
           </q-badge>
 
-          <!-- Withdraw section -->
+          <q-btn
+            outline
+            dense
+            size="sm"
+            :color="selectedCard.enabled ? 'positive' : 'grey'"
+            :icon="selectedCard.enabled ? 'toggle_on' : 'toggle_off'"
+            :label="selectedCard.enabled ? 'Enabled' : 'Disabled'"
+            @click="toggleEnabled(selectedCard)"
+            class="q-mb-md"
+          ></q-btn>
+
+          <!-- Withdraw section (hidden by default) -->
           <template v-if="showWithdraw">
-            <div class="q-mb-md">
-              <div class="text-caption text-grey q-mb-xs">Scan to withdraw</div>
-              <div
-                v-if="selectedCard.qr_url"
-                style="background: white; padding: 12px; display: inline-block; border-radius: 8px;"
-              >
-                <q-img
-                  :src="selectedCard.qr_url"
-                  style="width: 200px; height: 200px;"
-                ></q-img>
+            <q-btn
+              outline
+              dense
+              size="sm"
+              color="primary"
+              icon="qr_code"
+              label="Show Withdraw QR"
+              @click="showWithdrawQr = true"
+              class="q-mb-md"
+              v-if="!showWithdrawQr"
+            ></q-btn>
+
+            <template v-if="showWithdrawQr">
+              <div class="q-mb-md">
+                <div class="text-caption text-grey q-mb-xs">Scan to withdraw</div>
+                <div
+                  v-if="selectedCard.qr_url"
+                  style="background: white; padding: 12px; display: inline-block; border-radius: 8px;"
+                >
+                  <q-img
+                    :src="selectedCard.qr_url"
+                    style="width: 200px; height: 200px;"
+                  ></q-img>
+                </div>
               </div>
-            </div>
 
-            <div class="q-mb-sm" v-if="selectedCard.lnurl">
-              <code class="text-caption" style="word-break: break-all;" v-text="selectedCard.lnurl"></code>
-            </div>
+              <div class="q-mb-sm" v-if="selectedCard.lnurl">
+                <code class="text-caption" style="word-break: break-all;" v-text="selectedCard.lnurl"></code>
+              </div>
 
-            <div class="row q-gutter-sm justify-center q-mb-md">
-              <q-btn
-                v-if="selectedCard.lnurl"
-                outline
-                color="primary"
-                icon="content_copy"
-                label="Copy LNURL"
-                @click="copyLnurl"
-              ></q-btn>
-              <q-btn
-                v-if="nfcSupported && selectedCard.lnurl"
-                outline
-                color="secondary"
-                icon="nfc"
-                label="Write to NFC"
-                @click="writeNfc"
-                :loading="writingNfc"
-              ></q-btn>
-            </div>
+              <div class="row q-gutter-sm justify-center q-mb-md">
+                <q-btn
+                  v-if="selectedCard.lnurl"
+                  outline
+                  color="primary"
+                  icon="content_copy"
+                  label="Copy LNURL"
+                  @click="copyLnurl"
+                ></q-btn>
+                <q-btn
+                  v-if="nfcSupported && selectedCard.lnurl"
+                  outline
+                  color="secondary"
+                  icon="nfc"
+                  label="Write to NFC"
+                  @click="writeNfc"
+                  :loading="writingNfc"
+                ></q-btn>
+              </div>
+            </template>
           </template>
 
           <q-banner v-if="written" class="bg-positive text-white q-mb-md">

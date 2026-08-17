@@ -27,6 +27,7 @@ class GiftCard(BaseModel):
     amount: int = Field(description="Initial funding amount")
     balance: int = Field(description="Remaining balance in satoshis")
     k1: str = Field(description="LNURL security nonce")
+    enabled: bool = Field(True, description="Whether the card is active")
     created_at: datetime
     expires_at: Optional[datetime]
     note: Optional[str]
@@ -40,6 +41,10 @@ class GiftCard(BaseModel):
     @property
     def is_spent(self) -> bool:
         return self.balance <= 0
+
+    @property
+    def is_active(self) -> bool:
+        return self.enabled and not self.is_expired and not self.is_spent
 
 
 class GiftCardResponse(GiftCard):

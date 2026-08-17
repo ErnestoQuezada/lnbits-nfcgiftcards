@@ -13,6 +13,7 @@ try {
         giftCards: [],
         selectedCard: null,
         written: false,
+        showWithdrawQr: false,
         form: {
           amount: '',
           note: '',
@@ -34,16 +35,13 @@ try {
       },
       rechargeQrUrl() {
         if (!this.selectedCard) return ''
-        // Prefer backend-provided QR URL
         if (this.selectedCard.lnurlp_qr_url) {
           return this.selectedCard.lnurlp_qr_url
         }
-        // Fallback: construct from bech32
         if (this.selectedCard.lnurlp_bech32) {
           var base = window.location.protocol + '//' + window.location.host + '/'
           return base + 'api/v1/qrcode/' + encodeURIComponent(this.selectedCard.lnurlp_bech32)
         }
-        // Last resort: construct from raw URL
         if (this.selectedCard.lnurlp_url) {
           var base2 = window.location.protocol + '//' + window.location.host + '/'
           return base2 + 'api/v1/qrcode/' + encodeURIComponent(this.selectedCard.lnurlp_url)
@@ -65,11 +63,12 @@ try {
           console.log('[NFC Gift Cards] fetch raw:', raw)
           if (Array.isArray(raw)) {
             this.giftCards = raw.map(function(c) {
-              var card = {
+              return {
                 id: c.id || '',
                 note: c.note || '',
                 amount: c.amount || 0,
                 balance: c.balance || 0,
+                enabled: c.enabled !== false,
                 lnurl: c.lnurl || '',
                 qr_url: c.qr_url || '',
                 lnurlp_url: c.lnurlp_url || '',
@@ -78,8 +77,6 @@ try {
                 expires_at: c.expires_at || null,
                 is_expired: false
               }
-              console.log('[NFC Gift Cards] mapped card:', card.id, 'lnurlp_qr_url:', card.lnurlp_qr_url)
-              return card
             })
             var now = new Date()
             this.giftCards.forEach(function(card) {
@@ -119,6 +116,7 @@ try {
           )
           this.selectedCard = (response && response.data) ? response.data : null
           this.written = false
+          this.showWithdrawQr = false
           this.form = {amount: '', note: '', expires_at: ''}
           await this.fetchGiftCards()
           this.$q.notify({type: 'positive', message: 'Gift card created!'})
@@ -127,6 +125,25 @@ try {
           LNbits.utils.notifyApiError(err)
         } finally {
           this.creating = false
+        }
+      },
+      async toggleEnabled(card) {
+        try {
+          var wallet = this.g.user.wallets[0]
+          var response = await LNbits.api.request(
+            'PUT',
+            '/nfcgiftcards/api/v1/nfcgiftcards/' + card.id + '/toggle',
+            wallet.adminkey
+          )
+          await this.fetchGiftCards()
+          if (this.selectedCard && this.selectedCard.id === card.id) {
+            var updated = this.giftCards.find(function(c) { return c.id === card.id })
+            if (updated) this.selectedCard = updated
+          }
+          this.$q.notify({type: 'positive', message: response.data.message})
+        } catch (err) {
+          console.error('[NFC Gift Cards] toggle error:', err)
+          LNbits.utils.notifyApiError(err)
         }
       },
       async rechargeCard() {
@@ -177,10 +194,10 @@ try {
       selectCard(card) {
         this.selectedCard = card
         this.written = false
+        this.showWithdrawQr = false
         this.nfcMessage = ''
         this.nfcError = false
         this.rechargeAmount = ''
-        console.log('[NFC Gift Cards] selected card:', card.id, 'lnurlp_qr_url:', card.lnurlp_qr_url, 'rechargeQrUrl:', this.rechargeQrUrl)
       },
       isCardActive(card) {
         return this.selectedCard && this.selectedCard.id === card.id

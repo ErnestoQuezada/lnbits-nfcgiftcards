@@ -14,6 +14,7 @@ from .crud import (
     get_gift_card,
     get_gift_cards,
     recharge_gift_card,
+    toggle_gift_card_enabled,
 )
 from .models import CreateGiftCardData, GiftCardResponse, RechargeData
 
@@ -55,12 +56,10 @@ def _build_card_response(card, request: Request) -> GiftCardResponse:
     base = str(request.base_url)
     logger.debug(f"Building response for {card.id} with base_url={base}")
 
-    # Withdraw QR
     if card.lnurl:
         resp.qr_url = base + f"api/v1/qrcode/{card.lnurl}"
         logger.debug(f"Withdraw QR: {resp.qr_url}")
 
-    # LNURL-pay (recharge)
     try:
         lnurlp_url = str(request.url_for(
             "nfcgiftcards.api_lnurlp_response", gift_card_id=card.id
@@ -75,7 +74,6 @@ def _build_card_response(card, request: Request) -> GiftCardResponse:
 
     except Exception as exc:
         logger.error(f"Failed to build LNURL-pay for {card.id}: {exc}")
-        # Still set the raw URL so frontend can work with it
         try:
             resp.lnurlp_url = str(request.url_for(
                 "nfcgiftcards.api_lnurlp_response", gift_card_id=card.id
@@ -103,7 +101,6 @@ async def api_list_gift_cards(
             result.append(resp)
         except Exception as exc:
             logger.error(f"Error building response for card {card.id}: {exc}")
-            # Skip cards that fail to build
     return result
 
 
@@ -195,6 +192,34 @@ async def api_recharge_gift_card(
         "success": True,
         "message": f"Added {data.amount} sats. New balance: {card.balance} sats.",
         "balance": card.balance,
+    }
+
+
+@nfcgiftcards_ext_api.put("/nfcgiftcards/{gift_card_id}/toggle", status_code=HTTPStatus.OK)
+async def api_toggle_gift_card(
+    gift_card_id: str,
+    key_info: WalletTypeInfo = Depends(require_admin_key),
+):
+    card = await get_gift_card(gift_card_id)
+    if not card:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail="Gift card does not exist.",
+        )
+    if card.wallet_id != key_info.wallet.id:
+        raise HTTPException(
+            status_code=HTTPStatus.FORBIDDEN,
+            detail="Not your gift card.",
+        )
+
+    new_state = not card.enabled
+    await toggle_gift_card_enabled(card.id, new_state)
+    status = "enabled" if new_state else "disabled"
+
+    return {
+        "success": True,
+        "message": f"Gift card {status}.",
+        "enabled": new_state,
     }
 
 
